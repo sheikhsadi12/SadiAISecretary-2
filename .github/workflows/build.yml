@@ -66,13 +66,13 @@ jobs:
           chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: |
+          ./gradlew kaptGenerateStubsDebugKotlin --no-daemon 2>&1 | \
+          grep -E "\.kt:[0-9]|^e:|error:|unresolved|None of" | \
+          head -40
+        continue-on-error: true
+
+      - name: Full Build
+        run: ./gradlew assembleDebug --no-daemon
         env:
           GRADLE_OPTS: "-Xmx2g -Dorg.gradle.daemon=false"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Sadi-AI-Secretary-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
