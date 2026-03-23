@@ -13,6 +13,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show what files exist
+        run: |
+          echo "=== Root files ==="
+          ls -la
+          echo "=== ZIP files ==="
+          find . -name "*.zip" 2>/dev/null
+
+      - name: Extract ZIP if needed
+        run: |
+          # ZIP file খুঁজে extract করো
+          ZIP=$(find . -name "*.zip" | head -1)
+          if [ -n "$ZIP" ]; then
+            echo "Found ZIP: $ZIP — extracting..."
+            unzip -o "$ZIP" -d extracted/
+            echo "=== Extracted contents ==="
+            ls -la extracted/
+            # settings.gradle কোথায় আছে খোঁজো
+            SETTINGS=$(find extracted/ -name "settings.gradle" | head -1)
+            echo "settings.gradle found at: $SETTINGS"
+            # সেই directory তে যাও
+            PROJ_DIR=$(dirname "$SETTINGS")
+            echo "Project dir: $PROJ_DIR"
+            # Project files root এ copy করো
+            cp -r "$PROJ_DIR"/. .
+            echo "=== After copy ==="
+            ls -la
+          else
+            echo "No ZIP found — files already extracted"
+          fi
+          # Final check
+          echo "=== settings.gradle check ==="
+          find . -name "settings.gradle" 2>/dev/null
+
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
